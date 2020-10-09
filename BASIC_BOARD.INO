@@ -17,8 +17,7 @@ float Ttime, frqu, ms;
 bool incs = false , dics = false, is_on = false;
 unsigned long call_time;
 
-
-#pragma region hardware_part
+#pragma region
 void lock_door(){
   digitalWrite(door_lock,HIGH);
 }
@@ -195,7 +194,7 @@ void motor_config(bool right, int Time, int speed){
   delay(5000);
 }
 
-void run_prog_1 (){
+void prog_1 (){
   H1: 
   while(digitalRead(btn_start)==0){} // wait start button
 
@@ -213,16 +212,24 @@ void run_prog_1 (){
     close_valve();
 
   stop_heating();
+
+  start_pumb();
+
   motor_config(1,10,900);
+  motor_config(0,10,900);
+
   motor_config(1,30,3300);
   motor_config(0,30,3300);
+  stop_pumb();
   motor_config(1,10,900);
+
+
   unlock_door();
   while (door_is_locked()){}
   // some tone to alert at end
 }
 
 void loop(){
-  run_prog_1 ();
+  prog_1 ();
   while(1);
 }
