@@ -1,30 +1,93 @@
-int freq = 5;
-int AC_LOAD = 3;
-int to_right = 4;
-int btn1 = A0;
-int runing = 6;
+
+int temp_sensor = 2;
+int motor = 3;          // high to fire the trick
+int to_right = 4;       // change relays status to make motor running revirce
+int freq = 5;           // get the frequency (motor speed)
+int runing = 6;         // high while motor is rotating
 int door_stat = 7;
 int door_lock = 8;
+int water_1 = 9;   // water in level 1
+int water_2 = 10;  // water reached level 2
+int pumb = 11;
+int valve = 12;
+int heater = 13;
+int btn_start = A0;     // debug stuff
 int dimming, Htime, Ltime, lf, dims=256, calls=0;
 float Ttime, frqu, ms;
 bool incs = false , dics = false, is_on = false;
 unsigned long call_time;
 
+
+#pragma region hardware_part
+void lock_door(){
+  digitalWrite(door_lock,HIGH);
+}
+
+void unlock_door(){
+  digitalWrite(door_lock,LOW);
+}
+
+void open_valve(){
+  digitalWrite(valve,HIGH);
+}
+
+void close_valve(){
+  digitalWrite(valve,LOW);
+}
+
+bool door_is_locked(){
+  return digitalRead(door_stat)==1;
+}
+
+void start_pumb(){
+  digitalWrite(pumb,HIGH);
+}
+
+bool water_in_level_1(){
+  return digitalRead(water_1)==1;
+}
+
+bool water_in_level_2(){
+  return digitalRead(water_2)==1;
+}
+
+void start_heating(){
+  digitalWrite(heater,HIGH);
+}
+
+void stop_heating(){
+  digitalWrite(heater,LOW);
+}
+
+int tempreture(){
+  // TODO: 
+}
+
+void stop_pumb(){
+  digitalWrite(pumb,LOW);
+}
+#pragma endregion
+
+
 void setup(){
   //ms=1100;
   Serial.begin(4800);
   pinMode(door_stat, INPUT);
-  pinMode(btn1, INPUT);
+  pinMode(btn_start, INPUT);
   pinMode(freq, INPUT);
   pinMode(runing, INPUT);
+  pinMode(water_1, INPUT);
+  pinMode(water_2, INPUT);
+  pinMode(pumb, OUTPUT);
+  pinMode(valve, OUTPUT);
   pinMode(door_lock, OUTPUT);
   pinMode(to_right, OUTPUT);
-  pinMode(AC_LOAD, OUTPUT);// Set AC Load pin as output
-  attachInterrupt(0, zero_crosss_int, RISING);  // Choose the zero cross interrupt # from the table above
+  pinMode(motor, OUTPUT);                 // Set AC Load pin as output
+  attachInterrupt(0, zero_cross, RISING);   // Choose the zero cross interrupt # from the table above
   //noInterrupts();
 }
 
-void zero_crosss_int(){  // function to be fired at the zero crossing to dim the light
+void zero_cross(){  
   // Firing angle calculation : 1 full 50Hz wave =1/50=20ms
   // Every zerocrossing thus: (50Hz)-> 10ms (1/2 Cycle) For 60Hz => 8.33ms (10.000/120)
   // 10ms=10000us
@@ -32,10 +95,10 @@ void zero_crosss_int(){  // function to be fired at the zero crossing to dim the
   if (dims < 256 && is_on) {
     int dimtime = (39 * dims);  // For 60Hz =>65
     delayMicroseconds(dimtime);    // Wait till firing the TRIAC
-    digitalWrite(AC_LOAD, HIGH);   // Fire the TRIAC
+    digitalWrite(motor, HIGH);   // Fire the TRIAC
     delayMicroseconds(10);         // triac On propogation delay
     // (for 60Hz use 8.33) Some Triacs need a longer period
-    digitalWrite(AC_LOAD, LOW);    // No longer trigger the TRIAC (the next zero crossing will swith it off) TRIAC
+    digitalWrite(motor, LOW);    // No longer trigger the TRIAC (the next zero crossing will swith it off) TRIAC
   }
 }
 
@@ -81,6 +144,7 @@ void get_hz(){
       //getting frequency with Ttime is in Micro seconds
   frqu=1000000/Ttime;
 }
+
 void speed_regulator(){
   //dimming = (analogRead(btn1)+1)/4;
   //ms = (256 - dimming) * 13.1;
@@ -114,32 +178,51 @@ void speed_regulator(){
   Serial.println(ms);
 }
 
-void motor_config(bool right, int Time){
+void motor_config(bool right, int Time, int speed){
   digitalWrite(to_right , right?HIGH:LOW);
-  delay(20);
-  ms = 1400;
+  delay(10);
+  ms = speed;
   call_time = micros();
   is_on = 1;
   //interrupts();
-  while(micros()<Time* 1000000+call_time)
+  while(micros()<Time* 1000000+call_time){
     speed_regulator();
+  }
   is_on = 0;
   //noInterrupts();
   while(digitalRead(runing)!=0){}
   digitalWrite(to_right ,LOW);
   delay(5000);
 }
+
 void run_prog_1 (){
-  motor_config(0,10);
-  motor_config(1,10);
-  //motor_config(0,10);
-}
-void loop(){
-  //run_prog_1();
-  while(digitalRead(door_stat)==0){
-    digitalWrite(door_lock,HIGH);
+  H1: 
+  while(digitalRead(btn_start)==0){} // wait start button
+
+  while(!door_is_locked()){ 
+    lock_door();
   }
+  
+  open_valve();
+  while (!water_in_level_1()){}
+
+  start_heating();
+  motor_config(0,10,900);
+
+  if(water_in_level_2())
+    close_valve();
+
+  stop_heating();
+  motor_config(1,10,900);
+  motor_config(1,30,3300);
+  motor_config(0,30,3300);
+  motor_config(1,10,900);
+  unlock_door();
+  while (door_is_locked()){}
+  // some tone to alert at end
+}
+
+void loop(){
   run_prog_1 ();
-  digitalWrite(door_lock,LOW);
   while(1);
 }
