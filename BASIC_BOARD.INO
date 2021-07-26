@@ -18,11 +18,11 @@ bool incs = false , dics = false, is_on = false;
 unsigned long call_time;
 
 #pragma region
-void lock_door(){
+void lock_door_switch(){
   digitalWrite(door_lock,HIGH);
 }
 
-void unlock_door(){
+void unlock_door_switch(){
   digitalWrite(door_lock,LOW);
 }
 
@@ -129,14 +129,15 @@ void get_hz1(){
 void get_hz(){
   if(digitalRead(runing)==0){
     calls++;
-    if (calls>2)motor_stuck();
+    if (calls>10)motor_stuck();
   }
-  Htime=pulseIn(freq, HIGH);      //read high time
-  Ltime=pulseIn(freq, LOW);       //read low time
+  Htime=pulseIn(freq, HIGH,100000);     //read high time
+  Ltime=pulseIn(freq, LOW,10000);      //read low time
   Ttime = Htime+Ltime;
   if(Ttime ==0){
     frqu = 0;
-    if(dims<250)dims-=10;else dims = 185;
+    if(dims<250)dims-=5;
+    else dims = 195;
     return;
   }
   calls = 0;
@@ -177,6 +178,21 @@ void speed_regulator(){
   Serial.println(ms);
 }
 
+void lock_door(){
+  int test_num = 0;
+  while(!door_is_locked()){ 
+    if(testnum >60){
+      door_error();
+      return;
+    }
+    test_num++;
+    lock_door_switch();
+    delay(1000);
+  }
+}
+void door_error(){
+  // TODO: show DE ,, implement stuff
+}
 void motor_config(bool right, int Time, int speed){
   digitalWrite(to_right , right?HIGH:LOW);
   delay(10);
@@ -198,9 +214,7 @@ void prog_1 (){
   H1: 
   while(digitalRead(btn_start)==0){} // wait start button
 
-  while(!door_is_locked()){ 
-    lock_door();
-  }
+  lock_door();
   
   open_valve();
   while (!water_in_level_1()){}
@@ -224,8 +238,8 @@ void prog_1 (){
   motor_config(1,10,900);
 
 
-  unlock_door();
-  while (door_is_locked()){}
+  unlock_door_switch();
+  while (door_is_locked()){delay(1000);}
   // some tone to alert at end
 }
 
