@@ -1,5 +1,8 @@
 {
     "board": "arduino:avr:mega",
+    "sketch": "BASIC_BOARD.ino",
     "configuration": "cpu=atmega2560",
-    "sketch": "BASIC_BOARD.ino"
+    "programmer": "arduino:arduinoisp",
+    "port": "COM11",
+    "output": "../ArduinoOutput"
 }
