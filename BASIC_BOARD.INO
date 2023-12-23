@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <PID_v1.h>
 #include <LiquidCrystal.h>
+#include <avr/iom2560.h>
 
 #define TACHO 3            // tacho signals input pin
 #define DETECT 2           // zero cross detect pin
