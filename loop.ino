@@ -1,6 +1,4 @@
 
 void loop() {
-
-  while(!digitalRead(BUTTON));
-  prog1();
+  // empty in HeliOS
 }

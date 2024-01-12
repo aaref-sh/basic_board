@@ -1,19 +1,18 @@
 
 
 void unlock_door_switch(){
-  lcd.setCursor(0,1);
-  lcd.print("Unlocking door  ");
-  digitalWrite(door_lock,LOW);
+  setOutValue(door_lock, LOW);
 }
 
 
 void lock_door_switch(){
-  digitalWrite(door_lock,HIGH);
+  setOutValue(door_lock, HIGH);
 }
 
 bool door_is_locked(){
-  return digitalRead(door_stat)==1;
+  return bitRead(inputsState[door_stat / 8], door_stat % 8) ;
 }
+
 void lock_door(){
   int test_num = 0;
   lcd.setCursor(0, 1);
@@ -31,10 +30,6 @@ void lock_door(){
   lcd.print("door locked");
 }
 void door_error(){
-  lcd.setCursor(0, 1);
-  lcd.print("locking failed  ");
-  while(!digitalRead(BUTTON));
-  lcd.setCursor(0, 1);
-  lcd.print("locking the door");
+  display.set("E6");
   // TODO: show DE ,, implement stuff
 }
