@@ -15,8 +15,6 @@ bool door_is_locked(){
 
 void lock_door(){
   int test_num = 0;
-  lcd.setCursor(0, 1);
-  lcd.print("locking the door");
   lock_door_switch();
   while(!door_is_locked()){ 
     if(test_num >50){
@@ -26,10 +24,7 @@ void lock_door(){
     test_num++;
     delay(2000);
   }
-  lcd.setCursor(0, 1);
-  lcd.print("door locked");
 }
 void door_error(){
-  display.set("E6");
-  // TODO: show DE ,, implement stuff
+  // TODO: show DE ,, implement stuff ERR_Door
 }

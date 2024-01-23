@@ -9,3 +9,16 @@ void rinse(int seconds){
         toright ^= 1;
     }
 }
+
+
+void runPart(){
+
+}
+
+void preRun(){
+    
+  lock_door();
+
+  requlateWaterLevel();
+
+}

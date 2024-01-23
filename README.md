@@ -15,4 +15,6 @@
 "shiftedOutput.ino",
 "valves.ino",
 "washFuncs.ino",
+"classes.ino",
+"programs.ino", 
 "zdoor.ino"

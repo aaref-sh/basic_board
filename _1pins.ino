@@ -14,9 +14,7 @@
 #pragma endregion
 
 #pragma region "4x7 sigments digital display"
-#define SCREEN_DATA_PIN 5       // DS pin
-#define SCREEN_LATCH_PIN 6      // ST_CP pin
-#define SCREEN_CLOCK_PIN 7      // SH_CP pin
+
 #pragma endregion   
 
 #pragma region "outputs registers"

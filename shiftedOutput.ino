@@ -22,11 +22,6 @@
 */ 
 
 
-// Define the number of shift registers
-#define NUM_OUTPUT_REGISTERS 4
-
-// Create an array to store the state of each output pin
-byte registerState[NUM_OUTPUT_REGISTERS];
 
 // A function to write a single pin of the shift registers
 void regWrite(int pin, bool state) {

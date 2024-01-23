@@ -21,6 +21,7 @@ void tacho() {
   RPM = prerpm / TACHOPULSES;
   lastflash = micros();
 }
+
 void run_motor(int TimeInSecs,int desiredrpm,bool toright){
     desiredRPM = desiredrpm;
     if(toright){
@@ -42,7 +43,7 @@ void run_motor(int TimeInSecs,int desiredrpm,bool toright){
 
 
 void turn_off(){
-    relayState = !relayState;
+    relayState = 0;
     Setpoint = 200;
     Input = 200;
     runflag = false;
@@ -50,13 +51,15 @@ void turn_off(){
     delay (300);                     // delay to prevent sparks on relay contacts
     setOutValue(RELAY, relayState); // set the Relay:
 }
+
 void turn_on(){
-    relayState = !relayState;
+    relayState = 1;
     loopflag = true;
     setOutValue(RELAY, relayState); // set the Relay:
     delay (300);                     // delay to prevent sparks on relay contacts
     startflag = true;                // flag to start motor
 }
+
 void speed_regulator(int TimeInSecs){
   if (relayState && !loopflag) {
     unsigned long start_time = millis();
@@ -71,14 +74,6 @@ void speed_regulator(int TimeInSecs){
       Input = RPM;
       Setpoint = desiredRPM;
 
-      lcd.setCursor(0,0);
-      lcd.print("desired RPM:");
-      lcd.setCursor(12,0);
-      lcd.print(desiredRPM);
-      lcd.setCursor(0,1);
-      lcd.print("Real RPM:   ");
-      lcd.setCursor(12, 1);
-      lcd.print(RPM);
       
       Serial.print(desiredRPM);
       Serial.print("   ");
@@ -134,7 +129,6 @@ void fault_protection(){
 }
 
 void stuckerror() {
-  display.set("E5");
   while (1) {
   }
 }

@@ -18,7 +18,5 @@ void prog1(){
   run_motor(15,1300,1);
   
   unlock_door_switch();
-  while(door_is_locked());
-  lcd.setCursor(0,1);
-  lcd.print("    FINISHED!   ");
+  while(door_is_locked()){delay(100);};
 }

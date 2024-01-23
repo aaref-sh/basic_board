@@ -1,21 +1,29 @@
 #include <avr/io.h>
-#include <LiquidCrystal.h>
 #include <avr/interrupt.h>
 #include <PID_v1.h>
-#include <avr/iom2560.h>
+//#include <avr/iom2560.h>
+#include <avr/iom328.h>
 #include <HeliOS.h>
-#include <ShiftDisplay2.h>
- 
-
 
 #define BUTTON 4                // rottary encoder button pin
 
+#define sampleRate 1             // Variable that determines how fast our PID loop
+#define rpmcorrection 86         // sito kazkodel reikia, kad realus rpm atitiktu matuojamus
+#define protection 2000          // protection will switch on when real rpm exceeds desired by value
+#define debounceDelay 50         // the debounce time; increase if the output flickers
+#define minoutputlimit 80        // limit of PID output
+#define maxoutputlimit 540       // limit of PID output
+#define mindimminglimit 80       // the shortest delay before triac fires
+#define maxdimminglimit 625      // for 60Hz will be 520
+#define risetime 100             // RPM rise time delay in microseconds (risetime x RPM)
 
+#define sKp 0.1
+#define sKi 0.2
+#define sKd 0 // PID tuning parameters for starting motor
+#define rKp 0.25
+#define rKi 1
+#define rKd 0  // PID tuning parameters for runnig motor
 
-const int rs = A2, en = A3, d4 = A4, d5 = A5, d6 = A6, d7 = A7;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-
-ShiftDisplay2 display(COMMON_CATHODE, 4);
 
 unsigned int RPM;                     // real rpm variable
 unsigned int count;                   // tacho pulses count variable
@@ -26,15 +34,6 @@ unsigned long lastpiddelay = 0;
 unsigned long previousMillis = 0;
 unsigned long lastDebounceTime = 0;
 
-const int sampleRate = 1;             // Variable that determines how fast our PID loop
-const int rpmcorrection = 86;         // sito kazkodel reikia, kad realus rpm atitiktu matuojamus
-const int protection = 2000;          // protection will switch on when real rpm exceeds desired by value
-const int debounceDelay = 50;         // the debounce time; increase if the output flickers
-const int minoutputlimit = 80;        // limit of PID output
-const int maxoutputlimit = 540;       // limit of PID output
-const int mindimminglimit = 80;       // the shortest delay before triac fires
-const int maxdimminglimit = 625;      // for 60Hz will be 520
-const int risetime = 100;             // RPM rise time delay in microseconds (risetime x RPM)
 int desiredRPM = 2200;                // ENTER DESIRED RPM HERE
 
 int dimming = 540;                    // this should be the same as maxoutputlimit
@@ -47,8 +46,6 @@ bool startflag = false;               // flag for motor start delay
 bool runflag = false;                 // flag for motor running state
 
 double Setpoint, Input, Output;       // define PID variables
-double sKp = 0.1, sKi = 0.2, sKd = 0; // PID tuning parameters for starting motor
-double rKp = 0.25, rKi = 1, rKd = 0;  // PID tuning parameters for runnig motor
 
 PID myPID(&Input, &Output, &Setpoint, sKp, sKi, sKd, DIRECT); // define PID variables and parameters
 
